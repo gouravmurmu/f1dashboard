@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  f1-dashboard:
+    build: .
+    container_name: f1-dashboard
+    ports:
+      - "8501:8501"
+    volumes:
+      - .:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
