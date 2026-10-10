@@ -1,9 +1,7 @@
-streamlit
-fastf1
-pandas
-numpy
-scikit-learn
-plotly
-matplotlib
-requests
-joblib
+streamlit>=1.45,<2
+fastf1>=3.5
+pandas>=2.2,<3
+numpy>=1.26,<3
+scikit-learn>=1.5
+plotly>=5.24
+requests>=2.32
