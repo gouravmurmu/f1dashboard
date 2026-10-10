@@ -1,13 +1,11 @@
-version: '3.8'
-
 services:
   f1-dashboard:
     build: .
-    container_name: f1-dashboard
     ports:
       - "8501:8501"
     volumes:
-      - .:/app
-    environment:
-      - PYTHONUNBUFFERED=1
+      - f1-cache:/app/.fastf1-cache   # keep downloaded timing data between restarts
     restart: unless-stopped
+
+volumes:
+  f1-cache:
