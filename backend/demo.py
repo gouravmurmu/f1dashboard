@@ -13,29 +13,32 @@ import pandas as pd
 
 from backend.schema import RaceData
 
-# abbreviation, full name, team, team colour, pace offset (s/lap vs fastest car)
-GRID_2024: List[Tuple[str, str, str, str, float]] = [
-    ("VER", "Max Verstappen", "Red Bull Racing", "#3671C6", 0.00),
-    ("PER", "Sergio Perez", "Red Bull Racing", "#3671C6", 0.45),
-    ("NOR", "Lando Norris", "McLaren", "#FF8000", 0.05),
-    ("PIA", "Oscar Piastri", "McLaren", "#FF8000", 0.15),
-    ("LEC", "Charles Leclerc", "Ferrari", "#E80020", 0.10),
-    ("SAI", "Carlos Sainz", "Ferrari", "#E80020", 0.18),
-    ("HAM", "Lewis Hamilton", "Mercedes", "#27F4D2", 0.22),
-    ("RUS", "George Russell", "Mercedes", "#27F4D2", 0.25),
+# abbreviation, full name, team, team colour, pace offset (s/lap vs fastest car). 2026 line-up.
+GRID: List[Tuple[str, str, str, str, float]] = [
+    ("ANT", "Kimi Antonelli", "Mercedes", "#00D7B6", 0.00),
+    ("RUS", "George Russell", "Mercedes", "#00D7B6", 0.08),
+    ("HAM", "Lewis Hamilton", "Ferrari", "#ED1131", 0.14),
+    ("LEC", "Charles Leclerc", "Ferrari", "#ED1131", 0.12),
+    ("NOR", "Lando Norris", "McLaren", "#F47600", 0.15),
+    ("PIA", "Oscar Piastri", "McLaren", "#F47600", 0.20),
+    ("VER", "Max Verstappen", "Red Bull Racing", "#4781D7", 0.18),
+    ("HAD", "Isack Hadjar", "Red Bull Racing", "#4781D7", 0.45),
     ("ALO", "Fernando Alonso", "Aston Martin", "#229971", 0.55),
     ("STR", "Lance Stroll", "Aston Martin", "#229971", 0.75),
-    ("GAS", "Pierre Gasly", "Alpine", "#FF87BC", 0.80),
-    ("OCO", "Esteban Ocon", "Alpine", "#FF87BC", 0.82),
-    ("ALB", "Alexander Albon", "Williams", "#64C4FF", 0.85),
-    ("SAR", "Logan Sargeant", "Williams", "#64C4FF", 1.05),
-    ("TSU", "Yuki Tsunoda", "RB", "#6692FF", 0.70),
-    ("RIC", "Daniel Ricciardo", "RB", "#6692FF", 0.78),
-    ("HUL", "Nico Hulkenberg", "Haas F1 Team", "#B6BABD", 0.72),
-    ("MAG", "Kevin Magnussen", "Haas F1 Team", "#B6BABD", 0.88),
-    ("BOT", "Valtteri Bottas", "Kick Sauber", "#52E252", 0.95),
-    ("ZHO", "Zhou Guanyu", "Kick Sauber", "#52E252", 1.10),
+    ("GAS", "Pierre Gasly", "Alpine", "#00A1E8", 0.60),
+    ("COL", "Franco Colapinto", "Alpine", "#00A1E8", 0.80),
+    ("ALB", "Alexander Albon", "Williams", "#1868DB", 0.58),
+    ("SAI", "Carlos Sainz", "Williams", "#1868DB", 0.52),
+    ("LAW", "Liam Lawson", "Racing Bulls", "#6C98FF", 0.62),
+    ("LIN", "Arvid Lindblad", "Racing Bulls", "#6C98FF", 0.78),
+    ("OCO", "Esteban Ocon", "Haas F1 Team", "#9C9FA2", 0.70),
+    ("BEA", "Oliver Bearman", "Haas F1 Team", "#9C9FA2", 0.62),
+    ("HUL", "Nico Hulkenberg", "Audi", "#F50537", 0.72),
+    ("BOR", "Gabriel Bortoleto", "Audi", "#F50537", 0.70),
+    ("PER", "Sergio Perez", "Cadillac", "#909090", 0.95),
+    ("BOT", "Valtteri Bottas", "Cadillac", "#909090", 1.00),
 ]
+GRID_2024 = GRID  # backwards-compatible name
 
 DEMO_CALENDAR = [
     ("Bahrain Grand Prix", "Sakhir", 57, 94.5), ("Saudi Arabian Grand Prix", "Jeddah", 50, 92.0),
@@ -80,7 +83,7 @@ def generate_race(year: int = 2024, round_number: int = 1, seed: int = None) -> 
     seed = seed if seed is not None else year * 100 + round_number
     rng = np.random.default_rng(seed)
     name, location, total_laps, base_lap = DEMO_CALENDAR[(round_number - 1) % len(DEMO_CALENDAR)]
-    drivers = GRID_2024
+    drivers = GRID
     n = len(drivers)
 
     # Grid: roughly by pace with qualifying noise
@@ -242,12 +245,12 @@ def demo_history(year: int) -> pd.DataFrame:
     rng = np.random.default_rng(year)
     rows = []
     for rnd, (name, loc, laps, _) in enumerate(DEMO_CALENDAR, start=1):
-        perf = np.array([d[4] for d in GRID_2024]) + rng.normal(0, 0.35, len(GRID_2024))
+        perf = np.array([d[4] for d in GRID]) + rng.normal(0, 0.35, len(GRID))
         grid = np.argsort(np.argsort(perf + rng.normal(0, 0.2, len(perf)))) + 1
         dnf = rng.random(len(perf)) < 0.06
         order = np.argsort(np.where(dnf, 99, perf))
         for pos, i in enumerate(order, start=1):
-            d = GRID_2024[i]
+            d = GRID[i]
             rows.append({"Season": year, "Round": rnd, "RaceName": name, "Date": f"{year}-{3 + rnd // 2:02d}-01",
                          "Circuit": loc, "Country": loc, "Driver": d[0], "DriverName": d[1], "DriverId": d[1],
                          "Constructor": d[2], "Grid": int(grid[i]), "Position": pos,

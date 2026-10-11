@@ -7,7 +7,7 @@ from typing import Optional, Tuple
 import numpy as np
 import pandas as pd
 
-from backend import demo
+from backend import demo, openf1
 from backend.schema import LAP_COLUMNS, RaceData
 
 logger = logging.getLogger(__name__)
@@ -36,22 +36,37 @@ def get_schedule(year: int, source: str = "live") -> Tuple[pd.DataFrame, Optiona
                 return done[["RoundNumber", "EventName", "Location", "EventDate"]].reset_index(drop=True), None
             return pd.DataFrame(columns=["RoundNumber", "EventName", "Location", "EventDate"]), None
         except Exception as e:  # noqa: BLE001
-            logger.warning("Schedule for %s unavailable: %s", year, e)
-            note = f"F1 timing data is unreachable ({type(e).__name__}), so demo data is shown."
+            logger.warning("FastF1 schedule for %s unavailable: %s", year, e)
+            try:
+                return openf1.schedule(year), None
+            except Exception as e2:  # noqa: BLE001
+                logger.warning("OpenF1 schedule for %s unavailable: %s", year, e2)
+            note = (f"F1 timing data is unreachable ({type(e).__name__}), so SIMULATED demo races are shown "
+                    "instead of the real calendar.")
             return demo.demo_schedule(year), note
     return demo.demo_schedule(year), None
 
 
 def load_race(year: int, round_number: int, source: str = "live") -> Tuple[RaceData, Optional[str]]:
-    """Loads a race. Falls back to a generated race if live data is unavailable."""
-    if source == "live":
-        try:
-            return _load_fastf1_race(year, round_number), None
-        except Exception as e:  # noqa: BLE001
-            logger.warning("Live race load failed: %s", e)
-            note = f"Could not load live timing for this race ({type(e).__name__}), so a simulated race is shown."
-            return demo.generate_race(year, round_number), note
-    return demo.generate_race(year, round_number), None
+    """Loads a race from FastF1, then OpenF1, and only then falls back to a simulated race."""
+    if source != "live":
+        return demo.generate_race(year, round_number), None
+    errors = []
+    try:
+        return _load_fastf1_race(year, round_number), None
+    except Exception as e:  # noqa: BLE001
+        logger.warning("FastF1 race load failed: %s", e)
+        errors.append(f"FastF1: {type(e).__name__}: {str(e)[:120]}")
+    try:
+        sched, _ = get_schedule(year, "live")
+        row = sched[sched["RoundNumber"] == round_number].iloc[0]
+        return openf1.load_race(year, round_number, row["EventDate"], row["EventName"], row["Location"]), None
+    except Exception as e:  # noqa: BLE001
+        logger.warning("OpenF1 race load failed: %s", e)
+        errors.append(f"OpenF1: {type(e).__name__}: {str(e)[:120]}")
+    note = ("Live timing for this race could not be loaded, so a SIMULATED race is shown. "
+            "It is not real data. Details: " + " · ".join(errors))
+    return demo.generate_race(year, round_number), note
 
 
 def _load_fastf1_race(year: int, round_number: int) -> RaceData:
