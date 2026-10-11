@@ -99,10 +99,12 @@ def race_picker() -> Tuple[RaceData, str]:
 
     with st.spinner(f"Loading {choice} (first load of a live race can take a minute)..."):
         race, race_note = cached_race(year, rnd, source)
-    if race_note:  # a simulated stand-in keeps the name of the race that was picked
-        race.event_name = sched.iloc[labels.index(choice)]["EventName"]
+    if race_note:  # make it unmistakable that this is not the real race
+        race.event_name = f"{sched.iloc[labels.index(choice)]['EventName']} (simulated)"
     for msg in {note, race_note} - {None}:
-        st.warning(msg)
+        st.error(msg, icon="⚠️")
     if race.source == "demo":
-        st.sidebar.caption("Showing simulated demo data.")
+        st.sidebar.caption("Showing simulated demo data, not real results.")
+    elif race.source == "openf1":
+        st.sidebar.caption("Timing from OpenF1.")
     return race, source
