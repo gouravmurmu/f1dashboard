@@ -12,6 +12,7 @@ interface Props { idx: ReplayIndex; state: RaceState; sim: SimResult[]; selected
 
 export default function RaceCharts({ idx, state, sim, selected }: Props) {
   const [tab, setTab] = useState<Tab>("Positions");
+  const [racingOnly, setRacingOnly] = useState(false);
   const lap = state.lap;
   const b = idx.bundle;
   const t = state.t;
@@ -26,22 +27,33 @@ export default function RaceCharts({ idx, state, sim, selected }: Props) {
     const posRows: Record<string, number>[] = [];
     const gapRows: Record<string, number>[] = [];
     const lapRows: Record<string, number>[] = [];
+    const cleanRows: Record<string, number>[] = [];
     const leaderLaps = Math.max(0, state.cars.reduce((m, c) => Math.max(m, c.lapsDone), 0));
     for (let l = 1; l <= leaderLaps; l++) {
       const pr: Record<string, number> = { lap: l }, gr: Record<string, number> = { lap: l }, lr: Record<string, number> = { lap: l };
+      const cr: Record<string, number> = { lap: l };
       for (const d of b.drivers) {
-        const rec = idx.lapsBy.get(d.number)?.find((x) => x.lap === l);
+        const laps = idx.lapsBy.get(d.number);
+        const i = laps?.findIndex((x) => x.lap === l) ?? -1;
+        const rec = i >= 0 ? laps![i] : undefined;
         if (!rec || idx.lapEnd(rec) > t) continue;
         const end = idx.lapEnd(rec);
         const pos = lastBefore(idx.posBy.get(d.number), end);
         if (pos) pr[d.code] = pos.pos;
         const iv = lastBefore(idx.intBy.get(d.number), end);
         if (iv && typeof iv.gap === "number") gr[d.code] = iv.gap;
-        if (rec.dur != null && rec.dur < idx.medianLap * 1.12 && l > 1) lr[d.code] = rec.dur;
+        // OpenF1 leaves lap 1 (and some laps under red flag) without a duration; use the gap to the next lap's start.
+        const next = laps![i + 1];
+        const dur = rec.dur ?? (next ? (next.start - rec.start) / 1000 : null);
+        // Keep opening, pit and safety car laps; drop only red-flag-length outliers.
+        if (dur != null && dur < idx.medianLap * 1.6) {
+          lr[d.code] = dur;
+          if (l > 1 && !rec.pitOut && dur < idx.medianLap * 1.12) cr[d.code] = dur;
+        }
       }
-      posRows.push(pr); gapRows.push(gr); lapRows.push(lr);
+      posRows.push(pr); gapRows.push(gr); lapRows.push(lr); cleanRows.push(cr);
     }
-    return { posRows, gapRows, lapRows };
+    return { posRows, gapRows, lapRows, cleanRows };
   }, [idx, b.drivers, lap, finished]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const drivers = b.drivers;
@@ -67,7 +79,13 @@ export default function RaceCharts({ idx, state, sim, selected }: Props) {
           highlight={focus.map(code)} yLabel="Gap to leader (s)" fmt={(v) => `+${v.toFixed(1)}s`} />
       )}
       {tab === "Lap times" && (
-        <Chart rows={data.lapRows} keys={focus.map(code)} colorOf={(k) => drivers.find((d) => d.code === k)!.color}
+        <label className="mb-2 flex items-center gap-2 text-xs text-muted">
+          <input type="checkbox" checked={racingOnly} onChange={(e) => setRacingOnly(e.target.checked)} className="accent-f1" />
+          Hide lap 1, pit and safety car laps
+        </label>
+      )}
+      {tab === "Lap times" && (
+        <Chart rows={racingOnly ? data.cleanRows : data.lapRows} keys={focus.map(code)} colorOf={(k) => drivers.find((d) => d.code === k)!.color}
           highlight={focus.map(code)} yLabel="Lap time" fmt={(v) => fmtLap(v)} domain={["dataMin - 0.5", "dataMax + 0.5"]} />
       )}
       {tab === "Strategy" && <Strategy idx={idx} state={state} />}
