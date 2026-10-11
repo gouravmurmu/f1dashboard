@@ -113,6 +113,8 @@ export interface RaceBundle {
   simulated: boolean;
   live: boolean;
   note?: string;
+  /** OpenF1 refused because a session is live; the client keeps retrying. */
+  locked?: boolean;
 }
 
 /** Car positions for a time window: per driver a flat [t, x, y, t, x, y, ...] array. */
