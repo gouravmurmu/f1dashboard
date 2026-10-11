@@ -44,6 +44,46 @@ Fastest-lap speed, throttle, brake and gear traces for two drivers, a running ti
 | --- | --- |
 | ![Predictions](docs/screenshots/predictions.png) | ![History](docs/screenshots/history.png) |
 
+## 🌐 Website (Next.js on Vercel)
+
+The [`web/`](web) folder is a full website version of the dashboard, built with Next.js for Vercel.
+
+![Race centre on the website](docs/screenshots/web_race_centre.png)
+
+- **Live race tracker.** Every car moves around an outline of the circuit, drawn from OpenF1 car
+  positions, next to a live timing tower with gaps, tyres and pit stops. Click a car or a row to follow
+  that driver. During a race weekend the page switches to live mode on its own.
+- **Live race simulation.** A Monte Carlo simulator plays out the rest of the race 400 times in the
+  browser. It re-runs every lap and after every pit stop, and fills the **Win** and **Proj** columns
+  plus a prediction tab with win, podium and points chances.
+- **Replay any race since 2023** at 1×, 4×, 16× or 64× speed, or jump to any lap. You also get
+  position, gap, lap time, tyre strategy and results charts, which only show what had happened by
+  that moment.
+- **Home page**: countdown to the next race, the championship leader, standings and the season calendar.
+  **Standings**: title fight charts for any season since 1950. **History**: wins, podiums, biggest
+  climbs and every race by race result back to 1950.
+- If live data can't be reached, the race page falls back to a clearly labelled simulated race.
+
+Data comes from [OpenF1](https://openf1.org) (timing and car positions) and [Jolpica](https://github.com/jolpica/jolpica-f1)
+(results since 1950). Both are free and need no API keys. Server routes cache responses on Vercel's
+CDN, so visitors don't each hit the APIs.
+
+### Deploy on Vercel
+
+1. In Vercel choose **Add New → Project** and import this repository.
+2. Set **Root Directory** to `web`. Vercel detects Next.js; leave the other settings as they are.
+3. Click **Deploy**. No environment variables are needed.
+
+### Run the website locally
+
+```bash
+cd web
+npm install
+npm run dev          # http://localhost:3000
+F1_FIXTURES=1 npm run dev   # offline: built-in calendar, standings and the simulated race
+npm test             # replay and simulator tests
+```
+
 ## Data
 
 - **FastF1** for lap timing, tyres, track status, weather and car telemetry (2018 onwards). Downloads
