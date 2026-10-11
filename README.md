@@ -59,6 +59,18 @@ The [`web/`](web) folder is a full website version of the dashboard, built with 
 - **Replay any race since 2023** at 1×, 4×, 16× or 64× speed, or jump to any lap. You also get
   position, gap, lap time, tyre strategy and results charts, which only show what had happened by
   that moment.
+- **Telemetry & models page** for every race, matching the Streamlit app:
+  - **Telemetry**: speed, throttle, brake and gear traces for two drivers' fastest laps, a running time
+    gap, and a track dominance map. The data is OpenF1 car data.
+  - **Tyre wear**: one regression separates each driver's pace from fuel burn and the wear of each
+    compound. It is scored on laps held out from fitting.
+  - **Pit stops**: gradient-boosted trees predict who pits next. They are scored out-of-fold with
+    whole drivers held out, against a tyre-age baseline.
+  - **Pace forecast**: the next laps' times with a 90% band, checked against what actually happened.
+  - **Strategy optimiser**: ranks every one- and two-stop plan using the fitted wear curves and the
+    measured pit loss.
+
+  ![Telemetry](docs/screenshots/web_telemetry.png)
 - **Home page**: countdown to the next race, the championship leader, standings and the season calendar.
   **Standings**: title fight charts for any season since 1950. **History**: wins, podiums, biggest
   climbs and every race by race result back to 1950.
