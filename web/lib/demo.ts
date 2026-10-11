@@ -238,3 +238,11 @@ export function demoLocations(from: number, to: number, stepMs = 400): LocationW
   }
   return { from, to, cars: out };
 }
+
+/** The simulated circuit (in track units) and each driver's pace offset, for synthetic telemetry. */
+export function demoCircuit() {
+  return { pts: TRACK.pts, cum: TRACK.cum, length: TRACK.length };
+}
+export function demoPace(d: number): number {
+  return GRID.find((g) => g[0] === d)?.[5] ?? 0.5;
+}

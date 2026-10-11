@@ -11,6 +11,7 @@ import TrackMap from "./TrackMap";
 import TimingTower from "./TimingTower";
 import PlaybackBar from "./PlaybackBar";
 import RaceCharts from "./RaceCharts";
+import { RaceTabs } from "@/components/analysis/RaceAnalysis";
 
 const LIVE_LAG = 8_000;
 
@@ -98,7 +99,8 @@ export default function RaceCentre({ sessionKey }: { sessionKey: number }) {
           <h1 className="text-3xl font-black uppercase leading-tight md:text-4xl">{flagEmoji(s.countryCode)} {s.meetingName}</h1>
           <div className="text-sm text-muted">{s.circuit}{bundle.weather && ` · Air ${bundle.weather.air.toFixed(0)}°C · Track ${bundle.weather.track.toFixed(0)}°C${bundle.weather.rain ? " · Rain" : ""}`}</div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <RaceTabs sessionKey={sessionKey} active="live" />
           {bundle.simulated && <span className="chip bg-medium/30 text-carbon">Simulated race</span>}
           {live ? <span className="chip bg-f1 text-white"><span className="live-dot h-2 w-2 rounded-full bg-white" />Live</span>
             : <span className="chip bg-carbon text-white">Replay</span>}
