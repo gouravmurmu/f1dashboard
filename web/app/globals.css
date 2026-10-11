@@ -1,0 +1,33 @@
+@import url("https://fonts.googleapis.com/css2?family=Titillium+Web:wght@400;600;700;900&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Titillium Web", ui-sans-serif, system-ui, sans-serif;
+  --color-f1: #e10600;
+  --color-f1-dark: #b30500;
+  --color-carbon: #15151e;
+  --color-ink: #1f1f2b;
+  --color-muted: #6b6b7b;
+  --color-line: #ececf1;
+  --color-paper: #f7f7f9;
+  --color-soft: #e8002d;
+  --color-medium: #ffd12e;
+  --color-hard: #f0f0ec;
+  --color-inter: #43b02a;
+  --color-wet: #0067ad;
+}
+
+html { background: var(--color-paper); color: var(--color-ink); }
+body { font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+
+.card { @apply rounded-2xl border border-line bg-white shadow-[0_2px_14px_rgba(21,21,30,0.05)]; }
+.chip { @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide; }
+.section-title { @apply text-lg font-black uppercase tracking-wide text-carbon; }
+.kicker { @apply text-[11px] font-bold uppercase tracking-[0.18em] text-muted; }
+.tabular { font-variant-numeric: tabular-nums; }
+
+.speed-stripes {
+  background-image: repeating-linear-gradient(-55deg, rgba(255,255,255,0.08) 0 2px, transparent 2px 14px);
+}
+@keyframes pulse-dot { 0%, 100% { opacity: 1 } 50% { opacity: .35 } }
+.live-dot { animation: pulse-dot 1.2s ease-in-out infinite; }
