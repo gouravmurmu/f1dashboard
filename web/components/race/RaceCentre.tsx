@@ -43,6 +43,19 @@ export default function RaceCentre({ sessionKey }: { sessionKey: number }) {
     return () => { cancelled = true; };
   }, [load]);
 
+  // OpenF1 is closed to free users while a session runs: check again every minute and switch once it opens.
+  useEffect(() => {
+    if (!bundle?.locked) return;
+    const id = setInterval(() => load().then((b) => {
+      if (b.locked) return;
+      setBundle(b);
+      setLive(b.live);
+      setT(b.live ? Date.now() - LIVE_LAG : b.raceStart);
+      setPlaying(!b.live);
+    }).catch(() => undefined), 60_000);
+    return () => clearInterval(id);
+  }, [bundle?.locked, load]);
+
   // While a session is live, refresh timing data every 15 seconds.
   useEffect(() => {
     if (!bundle?.live) return;

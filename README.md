@@ -80,11 +80,16 @@ Data comes from [OpenF1](https://openf1.org) (timing and car positions) and [Jol
 (results since 1950). Both are free and need no API keys. Server routes cache responses on Vercel's
 CDN, so visitors don't each hit the APIs.
 
+OpenF1 closes its free API from 30 minutes before a session until 30 minutes after it ends. In that
+window a race page shows the simulated race with a notice, checks again every minute, and switches
+to the real race as soon as OpenF1 reopens. To follow races while they run, get an OpenF1 sponsor
+account and add `OPENF1_USERNAME` and `OPENF1_PASSWORD` as environment variables in Vercel.
+
 ### Deploy on Vercel
 
 1. In Vercel choose **Add New → Project** and import this repository.
 2. Set **Root Directory** to `web`. Vercel detects Next.js; leave the other settings as they are.
-3. Click **Deploy**. No environment variables are needed.
+3. Click **Deploy**. No environment variables are needed (the optional OpenF1 account above is only for live sessions).
 
 ### Run the website locally
 
